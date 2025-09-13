@@ -1,0 +1,11 @@
+# 保護されたレポートディレクトリのセキュリティヘッダー
+/protected-reports/*
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: same-origin
+  
+# 全体のセキュリティヘッダー強化
+/*
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+  X-XSS-Protection: 1; mode=block

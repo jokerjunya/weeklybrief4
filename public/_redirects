@@ -1,0 +1,8 @@
+# 保護されたレポートへの直接アクセスを禁止
+/protected-reports/* /login 302
+
+# SPAのルーティング設定（認証必須ページ）
+/souke-report /index.html 200
+
+# その他のSPAルーティング
+/* /index.html 200

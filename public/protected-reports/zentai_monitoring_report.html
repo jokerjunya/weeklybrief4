@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 リクルートエージェント全体モニタリング</title>
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@2.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    
+    <style>
+        body { 
+            font-family: 'Hiragino Sans', 'Hiragino Mincho ProN', 'Yu Gothic', 'Meiryo', 'DejaVu Sans', sans-serif;
+            margin: 0; padding: 20px; background-color: #f8f9fa; 
+        }
+        .container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { 
+            background: linear-gradient(135deg, #7B68EE 0%, #663399 50%, #4B0082 100%);
+            color: white; padding: 15px 20px; border-radius: 8px 8px 0 0; position: relative;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .header-content { display: flex; align-items: center; justify-content: space-between; }
+        .header-left { display: flex; align-items: center; }
+        .header-icon { 
+            width: 32px; height: 32px; background: rgba(255,255,255,0.2); 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            margin-right: 12px; font-size: 16px;
+        }
+        .header-text h1 { 
+            margin: 0; font-size: 20px; font-weight: 600; 
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        .header-text .date { 
+            font-size: 12px; font-weight: 400; margin-top: 2px; opacity: 0.9;
+        }
+        .header-right { display: flex; align-items: center; gap: 8px; }
+        .update-button { 
+            background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+            color: white; padding: 6px 10px; border-radius: 4px; text-decoration: none;
+            font-size: 11px; font-weight: 500; transition: all 0.3s ease;
+            cursor: pointer; opacity: 0.8; display: flex; align-items: center; gap: 4px;
+        }
+        .update-button:hover { background: rgba(255,255,255,0.25); opacity: 1; }
+        .update-button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .update-time { 
+            font-size: 10px; opacity: 0.7; color: white;
+            white-space: nowrap; display: flex; align-items: center; gap: 3px;
+        }
+        .status-indicator { 
+            width: 6px; height: 6px; border-radius: 50%; display: inline-block;
+        }
+        .status-indicator.loading { background: #4FC3F7; animation: pulse 1.5s infinite; }
+        .status-indicator.success { background: #4CAF50; }
+        .status-indicator.error { background: #f44336; }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .header .generated { 
+            font-size: 10px; opacity: 0.6; margin-top: 4px;
+            position: absolute; bottom: 8px; right: 20px;
+        }
+        .content { padding: 25px; }
+        .section-title { 
+            font-size: 18px; font-weight: bold; margin: 25px 0 15px 0; 
+            padding-left: 10px; border-left: 4px solid #7B68EE; color: #333;
+        }
+        
+        /* Chart.js用のスタイル */
+        .charts-section { margin: 25px 0; }
+        .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin: 20px 0; }
+        .chart-grid-bottom { display: grid; grid-template-columns: 1fr; gap: 30px; margin: 20px 0; }
+        .chart-container { 
+            background: #fafafa; border-radius: 8px; padding: 20px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            overflow: hidden; /* はみ出し防止 */
+            min-width: 0; /* Flexbox shrinking対応 */
+        }
+        .chart-title { 
+            font-size: 16px; font-weight: bold; margin-bottom: 15px; 
+            text-align: center; color: #333;
+        }
+        .chart-canvas { 
+            position: relative; 
+            height: 300px; 
+            width: 100%; 
+            max-width: 100% !important; /* 強制的に幅制限 */
+            overflow: hidden;
+        }
+        .chart-canvas canvas {
+            max-width: 100% !important; /* Canvas要素も幅制限 */
+            height: auto !important;
+        }
+        
+        /* レスポンシブ対応 */
+        @media (max-width: 1024px) { 
+            .chart-grid { grid-template-columns: 1fr; }
+            .chart-grid-bottom { grid-template-columns: 1fr; }
+            .chart-canvas { height: 250px; }
+        }
+        
+        /* モバイル専用スタイル */
+        @media (max-width: 768px) {
+            body { padding: 5px; margin: 0; box-sizing: border-box; }
+            .container { 
+                border-radius: 4px; 
+                width: 100%; 
+                max-width: 100%;
+                overflow-x: hidden; /* 横スクロール防止 */
+            }
+            .header { padding: 12px 15px; }
+            .header-content { align-items: center; }
+            .header-left { min-width: 0; }
+            .header-right { gap: 6px; }
+            .header-icon { 
+                width: 28px; height: 28px; font-size: 14px;
+                margin-right: 8px;
+            }
+            .header-text h1 { font-size: 16px; }
+            .header-text .date { font-size: 11px; }
+            .update-button { padding: 5px 8px; font-size: 10px; }
+            .update-time { font-size: 9px; }
+            .content { 
+                padding: 15px; 
+                width: 100%;
+                box-sizing: border-box;
+                overflow-x: hidden;
+            }
+            .section-title { font-size: 16px; margin: 20px 0 10px 0; }
+            .chart-canvas { 
+                height: 220px; 
+                width: 100% !important;
+                max-width: calc(100vw - 70px) !important; /* viewport基準の幅制限 */
+            }
+            .chart-container { 
+                padding: 15px; 
+                width: 100%;
+                box-sizing: border-box;
+                overflow: hidden;
+            }
+            .charts-section { 
+                width: 100%;
+                overflow-x: hidden;
+            }
+            .chart-grid { 
+                gap: 15px; 
+                width: 100%;
+                overflow-x: hidden;
+            }
+            .chart-grid-bottom { 
+                gap: 15px;
+                width: 100%;
+                overflow-x: hidden;
+            }
+            
+            /* ヘッダーボタンを下に配置 */
+            .detail-button { 
+                padding: 8px 16px; 
+                font-size: 13px;
+                margin-top: 10px;
+            }
+        }
+        
+        /* 小型モバイル専用スタイル */
+        @media (max-width: 480px) {
+            body { padding: 2px; }
+            .header { padding: 10px 12px; }
+            .header-icon { 
+                width: 24px; height: 24px; font-size: 12px;
+                margin-right: 6px;
+            }
+            .header-text h1 { font-size: 14px; }
+            .header-text .date { font-size: 10px; }
+            .content { padding: 8px; }
+            .chart-canvas { height: 200px; }
+            .chart-container { padding: 8px; }
+            .chart-title { font-size: 14px; }
+        }
+        
+        /* KPIテーブルスタイル（集客モニタリングから移植） */
+        .kpi-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-bottom: 30px; 
+            table-layout: fixed; 
+        }
+        .kpi-table th, .kpi-table td { 
+            padding: 8px 6px; 
+            text-align: center; 
+            border: 1px solid #ddd; 
+            word-wrap: break-word;
+        }
+        .kpi-table th { background-color: #495057; color: white; font-weight: bold; font-size: 13px; }
+        .kpi-table td { background-color: #f8f9fa; font-size: 13px; }
+        .kpi-table .metric { background-color: #ffffff; font-weight: bold; text-align: left; }
+        .kpi-table .current { background-color: #fff3cd; font-weight: bold; font-size: 14px; }
+        
+        /* 内定数動向テーブル（8列）の列幅 */
+        .kpi-table.main-kpi th:nth-child(1) { width: 15%; }  /* 指標 */
+        .kpi-table.main-kpi th:nth-child(2) { width: 13%; }  /* 当日 */
+        .kpi-table.main-kpi th:nth-child(3) { width: 13%; }  /* 前日 */
+        .kpi-table.main-kpi th:nth-child(4) { width: 12%; }  /* 前日比 */
+        .kpi-table.main-kpi th:nth-child(5) { width: 13%; }  /* 前週同日 */
+        .kpi-table.main-kpi th:nth-child(6) { width: 12%; }  /* 前週比 */
+        .kpi-table.main-kpi th:nth-child(7) { width: 13%; }  /* 前年同日 */
+        .kpi-table.main-kpi th:nth-child(8) { width: 12%; }  /* 前年比 */
+        
+        .growth { font-weight: bold; }
+        .growth.positive { color: #28a745; }
+        .growth.negative { color: #dc3545; }
+        
+        /* KPIテーブルのモバイル対応 */
+        @media (max-width: 768px) {
+            .kpi-table { font-size: 11px; }
+            .kpi-table th, .kpi-table td { padding: 6px 4px; }
+            .kpi-table th { font-size: 11px; }
+            .kpi-table td { font-size: 11px; }
+        }
+        
+        /* 小型モバイル専用スタイル */
+        @media (max-width: 480px) {
+            /* 超小型テーブルスタイル */
+            .kpi-table { font-size: 10px; }
+            .kpi-table th, .kpi-table td { padding: 4px 3px; }
+            .kpi-table th { font-size: 10px; }
+            .kpi-table td { font-size: 10px; }
+        }
+        
+        .footer { text-align: center; padding: 20px; color: #6c757d; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="header-icon">📊</div>
+                    <div class="header-text">
+                        <h1>全体モニタリング</h1>
+                        <div class="date" id="reportDate">読み込み中...</div>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="update-time" id="updateTime">
+                        <span class="status-indicator success" id="statusIndicator"></span>
+                        <span id="lastUpdateText">-</span>
+                    </div>
+                    <button class="update-button" id="updateButton" onclick="requestDataUpdate()">
+                        <span id="updateButtonText">更新</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="content">
+            <!-- Chart.js グラフセクション -->
+            <div class="section-title">📊 総受推移グラフ</div>
+            <div class="charts-section">
+                <div class="chart-grid">
+                    <div class="chart-container">
+                        <div class="chart-title" id="daily-souke-title">デイリー総受推移（今月 対前年比較）</div>
+                        <div class="chart-canvas">
+                            <canvas id="dailyChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-title" id="cumulative-souke-title">累計総受推移（今月 対前年比較）</div>
+                        <div class="chart-canvas">
+                            <canvas id="cumulativeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-grid-bottom">
+                    <div class="chart-container">
+                        <div class="chart-title" id="weekly-souke-title">週次総受推移（直近3ヶ月 対前年比較）</div>
+                        <div class="chart-canvas">
+                            <canvas id="weeklyChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 内定数グラフセクション -->
+            <div class="section-title">📈 内定数推移グラフ</div>
+            <div class="charts-section">
+                <div class="chart-grid">
+                    <div class="chart-container">
+                        <div class="chart-title" id="daily-naitei-title">デイリー内定数推移（今月 対前年比較）</div>
+                        <div class="chart-canvas">
+                            <canvas id="dailyNaiteiChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-title" id="cumulative-naitei-title">累計内定数推移（今月 対前年比較）</div>
+                        <div class="chart-canvas">
+                            <canvas id="cumulativeNaiteiChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-grid-bottom">
+                    <div class="chart-container">
+                        <div class="chart-title" id="weekly-naitei-title">週次内定数推移（直近3ヶ月 対前年比較）</div>
+                        <div class="chart-canvas">
+                            <canvas id="weeklyNaiteiChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 内定数動向テーブル -->
+            <div class="section-title">📈 内定数動向</div>
+            <table class="kpi-table main-kpi">
+                <thead>
+                    <tr>
+                        <th>指標</th>
+                        <th>当日</th>
+                        <th>前日</th>
+                        <th>前日比</th>
+                        <th>前週同日</th>
+                        <th>前週比</th>
+                        <th>前年同日</th>
+                        <th>前年比</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="metric">内定数</td>
+                        <td class="current" id="naitei-kpi-latest">読み込み中...</td>
+                        <td id="naitei-kpi-prev-day">読み込み中...</td>
+                        <td class="growth" id="naitei-kpi-day-growth">計算中...</td>
+                        <td id="naitei-kpi-prev-week">読み込み中...</td>
+                        <td class="growth" id="naitei-kpi-week-growth">計算中...</td>
+                        <td id="naitei-kpi-prev-year">読み込み中...</td>
+                        <td class="growth" id="naitei-kpi-year-growth">計算中...</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+        </div>
+        
+        <div class="footer">
+            <div>🤖 全体モニタリング自動生成レポート | データソース: BigQuery dharma-dwh-rag</div>
+        </div>
+    </div>
+
+    <script>
+        // Chart.js設定データ（統合データ構造：総受+内定数）
+        let chartData = {
+            souke: {
+                daily: { '2024': [], '2025': [] },
+                cumulative: { '2024': [], '2025': [] },
+                weekly: { '2024': [], '2025': [] },
+                metadata: {
+                    lastUpdated: new Date().toISOString(),
+                    dataSource: 'loading'
+                }
+            },
+            naitei: {
+                daily: { '2024': [], '2025': [] },
+                cumulative: { '2024': [], '2025': [] },
+                weekly: { '2024': [], '2025': [] },
+                metadata: {
+                    lastUpdated: new Date().toISOString(),
+                    dataSource: 'loading'
+                }
+            },
+            metadata: {
+                lastUpdated: new Date().toISOString(),
+                dataSource: 'loading',
+                recordCount: 0
+            }
+        };
+        
+        // 初期化状態フラグ
+        let isInitialized = false;
+        
+        // モバイル判定関数
+        const isMobile = () => window.innerWidth <= 768;
+        
+        // iframe通信用のメッセージリスナー
+        window.addEventListener('message', (event) => {
+            // セキュリティ: オリジン確認（本番環境では適切なオリジンを設定）
+            // if (event.origin !== 'https://your-domain.netlify.app') return;
+            
+            if (event.data && event.data.type === 'UPDATE_CHART_DATA') {
+                console.log('🔄 Received chart data update from parent:', event.data.data);
+                console.log('📊 Updating charts with new data...');
+                updateChartsWithNewData(event.data.data);
+                
+                // タイムスタンプ更新
+                if (event.data.data.metadata && event.data.data.metadata.lastUpdated) {
+                    updateTimestamp(event.data.data.metadata.lastUpdated);
+                    updateHeaderTime(event.data.data.metadata.lastUpdated);
+                }
+            } else if (event.data && event.data.type === 'UPDATE_TABLE_DATA') {
+                console.log('📊 Received table data update from parent:', event.data.data);
+                updateNaiteiKpiTable(event.data.data);
+            } else if (event.data && event.data.type === 'UPDATE_STATUS') {
+                console.log('📊 Received status update from parent:', event.data.status);
+                updateHeaderStatus(event.data.status);
+            }
+        });
+        
+        // チャートデータ更新関数
+        function updateChartsWithNewData(newData) {
+            try {
+                console.log('📊 Updating charts with new data...');
+                
+                // グローバルchartDataを更新
+                chartData = newData;
+                isInitialized = true; // 初期化完了マーク
+                
+                // 既存のチャートを破棄
+                chartInstances.forEach((chart, index) => {
+                    if (chart && typeof chart.destroy === 'function') {
+                        chart.destroy();
+                        console.log(`Chart ${index} destroyed`);
+                    }
+                });
+                chartInstances.length = 0; // 配列をクリア
+                
+                // グローバルのchartDataを更新
+                window.chartData = newData;
+                
+                // チャートを再初期化
+                initializeCharts();
+                
+                // 更新時刻を表示更新
+                updateTimestamp(newData.metadata?.lastUpdated);
+                
+                console.log('✅ Charts updated successfully');
+            } catch (error) {
+                console.error('❌ Failed to update charts:', error);
+            }
+        }
+        
+        // タイムスタンプ更新関数
+        function updateTimestamp(lastUpdated) {
+            const timestampElements = document.querySelectorAll('.generated');
+            if (timestampElements.length > 0 && lastUpdated) {
+                const updateTime = new Date(lastUpdated);
+                const timeString = updateTime.toLocaleString('ja-JP', {
+                    year: 'numeric',
+                    month: '2-digit', 
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                
+                timestampElements.forEach(elem => {
+                    elem.textContent = `自動生成レポート（最終更新: ${timeString}）`;
+                });
+            }
+        }
+        
+        // 共通のChart.js設定（年度重ね合わせ用にcategory軸使用）
+        const commonOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            resizeDelay: 0, // リサイズ遅延なし
+            devicePixelRatio: window.devicePixelRatio || 1, // デバイス対応
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        font: {
+                            family: 'Hiragino Sans',
+                            size: isMobile() ? 10 : 12
+                        },
+                        padding: isMobile() ? 10 : 15,
+                        usePointStyle: true
+                    }
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    titleFont: { 
+                        family: 'Hiragino Sans',
+                        size: isMobile() ? 11 : 12 
+                    },
+                    bodyFont: { 
+                        family: 'Hiragino Sans',
+                        size: isMobile() ? 10 : 11 
+                    },
+                    padding: isMobile() ? 6 : 8
+                }
+            },
+            scales: {
+                x: {
+                    type: 'category',  // time → categoryに変更
+                    ticks: {
+                        font: { 
+                            family: 'Hiragino Sans',
+                            size: isMobile() ? 9 : 11
+                        },
+                        maxRotation: isMobile() ? 60 : 45,
+                        minRotation: isMobile() ? 30 : 0,
+                        maxTicksLimit: isMobile() ? 8 : 12
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            if (isMobile() && value >= 1000) {
+                                return (value / 1000).toFixed(1) + 'K件';
+                            }
+                            return value.toLocaleString() + '件';
+                        },
+                        font: { 
+                            family: 'Hiragino Sans',
+                            size: isMobile() ? 9 : 11
+                        },
+                        maxTicksLimit: isMobile() ? 6 : 8
+                    }
+                }
+            },
+            interaction: {
+                mode: 'nearest',
+                axis: 'x',
+                intersect: false
+            }
+        };
+
+        // Chart.jsインスタンスを格納する配列
+        const chartInstances = [];
+        
+        // チャート初期化関数（総受 + 内定数グラフ）
+        function initializeCharts() {
+            console.log('🎨 Initializing charts with integrated data structure...');
+            
+            // === 総受グラフセクション ===
+            
+            // デイリー総受チャート
+            const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+            const dailyChart = new Chart(dailyCtx, {
+            type: 'line',
+            data: {
+                datasets: [{
+                    label: '2025年',
+                    data: chartData.souke.daily['2025'],
+                    borderColor: '#7B68EE',
+                    backgroundColor: 'rgba(123, 104, 238, 0.1)',
+                    tension: 0.2,
+                    fill: false
+                }, {
+                    label: '2024年', 
+                    data: chartData.souke.daily['2024'],
+                    borderColor: '#ff7f0e',
+                    backgroundColor: 'rgba(255, 127, 14, 0.1)',
+                    borderDash: [5, 5],
+                    tension: 0.2,
+                    fill: false
+                }]
+            },
+            options: commonOptions
+        });
+        chartInstances.push(dailyChart);
+
+        // 累計総受チャート
+        const cumulativeCtx = document.getElementById('cumulativeChart').getContext('2d');
+        const cumulativeChart = new Chart(cumulativeCtx, {
+            type: 'line',
+            data: {
+                datasets: [{
+                    label: '2025年累計',
+                    data: chartData.souke.cumulative['2025'],
+                    borderColor: '#7B68EE',
+                    backgroundColor: 'rgba(123, 104, 238, 0.2)',
+                    tension: 0.2,
+                    fill: true
+                }, {
+                    label: '2024年累計',
+                    data: chartData.souke.cumulative['2024'],
+                    borderColor: '#ff7f0e',
+                    backgroundColor: 'rgba(255, 127, 14, 0.1)',
+                    borderDash: [5, 5], 
+                    tension: 0.2,
+                    fill: true
+                }]
+            },
+            options: commonOptions
+        });
+        chartInstances.push(cumulativeChart);
+
+        // 週次総受チャート（未完了週を点のみ表示）
+        const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
+        
+        // 2025年データを完了週と未完了週に分離
+        let weekly2025Complete = [...chartData.souke.weekly['2025']];
+        let weekly2025Current = null;
+        
+        // 未完了週（第34週）を検出して分離
+        const lastIndex = weekly2025Complete.length - 1;
+        if (lastIndex >= 0 && weekly2025Complete[lastIndex].is_current_week) {
+            weekly2025Current = weekly2025Complete.pop(); // 最後のデータポイントを取り除く
+        }
+        
+        const weeklyDatasets = [{
+            label: '2025年（完了週）',
+            data: weekly2025Complete,
+            borderColor: '#7B68EE',
+            backgroundColor: 'rgba(123, 104, 238, 0.2)',
+            tension: 0.2,
+            fill: false,
+            spanGaps: false  // 線の切断を許可
+        }, {
+            label: '2024年',
+            data: chartData.souke.weekly['2024'], 
+            borderColor: '#ff7f0e',
+            backgroundColor: 'rgba(255, 127, 14, 0.2)',
+            borderDash: [5, 5],
+            tension: 0.2,
+            fill: false
+        }];
+        
+        // 未完了週があれば点のみ表示用のデータセットを追加
+        if (weekly2025Current) {
+            weeklyDatasets.push({
+                label: '2025年（未完了週）',
+                data: [weekly2025Current],
+                borderColor: '#7B68EE',
+                backgroundColor: '#7B68EE',
+                pointRadius: 6,           // 点を大きく
+                pointBorderWidth: 2,     // 点の境界線を太く
+                showLine: false,         // 線を表示しない（点のみ）
+                fill: false
+            });
+        }
+        
+        const weeklyChart = new Chart(weeklyCtx, {
+            type: 'line',
+            data: {
+                datasets: weeklyDatasets
+            },
+            options: commonOptions
+        });
+        chartInstances.push(weeklyChart);
+        
+        // === 内定数グラフセクション ===
+        console.log('🎨 Initializing naitei charts...');
+        
+        
+        // 現在月全日付のラベル配列を生成（x軸範囲動的設定）
+        const currentDate = new Date();
+        const currentMonth = currentDate.getMonth() + 1; // 1-12
+        const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+        
+        const currentMonthLabels = [];
+        for (let day = 1; day <= daysInMonth; day++) {
+            currentMonthLabels.push(`${currentMonth}/${day}`);
+        }
+        
+        // 内定数グラフ用の設定（x軸範囲を現在月全体に動的設定）
+        const naiteiOptions = {
+            ...commonOptions,
+            scales: {
+                ...commonOptions.scales,
+                x: {
+                    ...commonOptions.scales.x,
+                    labels: currentMonthLabels  // 現在月全体を表示
+                }
+            }
+        };
+        
+        // デイリー内定数チャート
+        const dailyNaiteiCtx = document.getElementById('dailyNaiteiChart').getContext('2d');
+        const dailyNaiteiChart = new Chart(dailyNaiteiCtx, {
+            type: 'line',
+            data: {
+                labels: currentMonthLabels,  // 固定ラベル設定
+                datasets: [{
+                    label: '2025年内定数',
+                    data: chartData.naitei.daily['2025'],
+                    borderColor: '#9467bd',
+                    backgroundColor: 'rgba(148, 103, 189, 0.1)',
+                    tension: 0.2,
+                    fill: false,
+                    spanGaps: false  // 現在日以降で線を切断
+                }, {
+                    label: '2024年内定数', 
+                    data: chartData.naitei.daily['2024'],
+                    borderColor: '#d62728',
+                    backgroundColor: 'rgba(214, 39, 40, 0.1)',
+                    borderDash: [5, 5],
+                    tension: 0.2,
+                    fill: false,
+                    spanGaps: false  // データがない日は線を切断
+                }]
+            },
+            options: naiteiOptions  // 内定数用の設定を使用
+        });
+        chartInstances.push(dailyNaiteiChart);
+
+        // 累計内定数チャート
+        const cumulativeNaiteiCtx = document.getElementById('cumulativeNaiteiChart').getContext('2d');
+        const cumulativeNaiteiChart = new Chart(cumulativeNaiteiCtx, {
+            type: 'line',
+            data: {
+                labels: currentMonthLabels,  // 固定ラベル設定
+                datasets: [{
+                    label: '2025年累計内定数',
+                    data: chartData.naitei.cumulative['2025'],
+                    borderColor: '#9467bd',
+                    backgroundColor: 'rgba(148, 103, 189, 0.2)',
+                    tension: 0.2,
+                    fill: true,
+                    spanGaps: false  // 現在日以降で線を切断
+                }, {
+                    label: '2024年累計内定数',
+                    data: chartData.naitei.cumulative['2024'],
+                    borderColor: '#d62728',
+                    backgroundColor: 'rgba(214, 39, 40, 0.1)',
+                    borderDash: [5, 5], 
+                    tension: 0.2,
+                    fill: true,
+                    spanGaps: false  // データがない日は線を切断
+                }]
+            },
+            options: naiteiOptions  // 内定数用の設定を使用
+        });
+        chartInstances.push(cumulativeNaiteiChart);
+
+        // 週次内定数チャート（未完了週を点のみ表示）
+        const weeklyNaiteiCtx = document.getElementById('weeklyNaiteiChart').getContext('2d');
+        
+        // 2025年内定数データを完了週と未完了週に分離
+        let weeklyNaitei2025Complete = [...chartData.naitei.weekly['2025']];
+        let weeklyNaitei2025Current = null;
+        
+        // 未完了週を検出して分離
+        const lastNaiteiIndex = weeklyNaitei2025Complete.length - 1;
+        if (lastNaiteiIndex >= 0 && weeklyNaitei2025Complete[lastNaiteiIndex].is_current_week) {
+            weeklyNaitei2025Current = weeklyNaitei2025Complete.pop(); // 最後のデータポイントを取り除く
+        }
+        
+        const weeklyNaiteiDatasets = [{
+            label: '2025年内定数（完了週）',
+            data: weeklyNaitei2025Complete,
+            borderColor: '#9467bd',
+            backgroundColor: 'rgba(148, 103, 189, 0.2)',
+            tension: 0.2,
+            fill: false,
+            spanGaps: false  // 線の切断を許可
+        }, {
+            label: '2024年内定数',
+            data: chartData.naitei.weekly['2024'], 
+            borderColor: '#d62728',
+            backgroundColor: 'rgba(214, 39, 40, 0.2)',
+            borderDash: [5, 5],
+            tension: 0.2,
+            fill: false
+        }];
+        
+        // 未完了週があれば点のみ表示用のデータセットを追加
+        if (weeklyNaitei2025Current) {
+            weeklyNaiteiDatasets.push({
+                label: '2025年内定数（未完了週）',
+                data: [weeklyNaitei2025Current],
+                borderColor: '#9467bd',
+                backgroundColor: '#9467bd',
+                pointRadius: 6,           // 点を大きく
+                pointBorderWidth: 2,     // 点の境界線を太く
+                showLine: false,         // 線を表示しない（点のみ）
+                fill: false
+            });
+        }
+        
+        const weeklyNaiteiChart = new Chart(weeklyNaiteiCtx, {
+            type: 'line',
+            data: {
+                datasets: weeklyNaiteiDatasets
+            },
+            options: commonOptions
+        });
+        chartInstances.push(weeklyNaiteiChart);
+        
+        console.log('✅ All charts (souke + naitei) initialized successfully');
+        } // initializeCharts関数の終了
+        
+        // ヘッダーの更新ボタン状態管理
+        function updateHeaderStatus(status) {
+            const indicator = document.getElementById('statusIndicator');
+            const button = document.getElementById('updateButton');
+            const buttonText = document.getElementById('updateButtonText');
+            
+            if (!indicator || !button || !buttonText) return;
+            
+            // 状態に応じてインジケーターとボタンを更新
+            indicator.className = 'status-indicator';
+            
+            switch (status) {
+                case 'loading':
+                    indicator.classList.add('loading');
+                    button.disabled = true;
+                    buttonText.textContent = '更新中...';
+                    break;
+                case 'success':
+                    indicator.classList.add('success');
+                    button.disabled = false;
+                    buttonText.textContent = '更新';
+                    break;
+                case 'error':
+                    indicator.classList.add('error');
+                    button.disabled = false;
+                    buttonText.textContent = '更新';
+                    break;
+                default:
+                    indicator.classList.add('success');
+                    button.disabled = false;
+                    buttonText.textContent = '更新';
+            }
+        }
+        
+        // ヘッダーの時間表示更新
+        function updateHeaderTime(timestamp) {
+            const timeElement = document.getElementById('lastUpdateText');
+            if (!timeElement || !timestamp) return;
+            
+            try {
+                const updateTime = new Date(timestamp);
+                const now = new Date();
+                const diffMinutes = Math.floor((now - updateTime) / (1000 * 60));
+                
+                let timeText;
+                if (diffMinutes < 1) {
+                    timeText = '今';
+                } else if (diffMinutes < 60) {
+                    timeText = `${diffMinutes}分前`;
+                } else {
+                    timeText = updateTime.toLocaleDateString('ja-JP', {
+                        month: 'numeric',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                }
+                
+                timeElement.textContent = timeText;
+            } catch (error) {
+                console.warn('⚠️ Error updating header time:', error);
+                timeElement.textContent = '-';
+            }
+        }
+        
+        // データ更新要求を親ウィンドウに送信
+        function requestDataUpdate() {
+            console.log('📤 Requesting data update from iframe');
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'REQUEST_DATA_UPDATE',
+                    source: 'zentai-monitoring'
+                }, '*');
+            }
+        }
+        
+        // 初期化実行
+        initializeCharts();
+        
+        // ページ読み込み時にアニメーション効果
+        document.addEventListener('DOMContentLoaded', function() {
+            const header = document.querySelector('.header');
+            const content = document.querySelector('.content');
+            
+            header.style.opacity = '0';
+            header.style.transform = 'translateY(-20px)';
+            content.style.opacity = '0';
+            content.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                header.style.transition = 'all 0.6s ease';
+                content.style.transition = 'all 0.6s ease';
+                header.style.opacity = '1';
+                header.style.transform = 'translateY(0)';
+                content.style.opacity = '1';
+                content.style.transform = 'translateY(0)';
+                
+                // Chart.jsインスタンス初期化後のリサイズ
+                setTimeout(() => {
+                    forceChartResize();
+                }, 500);
+            }, 100);
+        });
+        
+        // Chart.js用のリサイズ処理関数
+        function forceChartResize() {
+            chartInstances.forEach((chart, index) => {
+                if (chart && typeof chart.resize === 'function') {
+                    try {
+                        chart.resize();
+                        console.log(`Chart ${index} resized successfully`);
+                    } catch (error) {
+                        console.warn(`Chart ${index} resize failed:`, error);
+                    }
+                }
+            });
+        }
+        
+        // ウィンドウリサイズ時のイベントリスナー
+        window.addEventListener('resize', function() {
+            clearTimeout(window.resizeTimer);
+            window.resizeTimer = setTimeout(() => {
+                forceChartResize();
+            }, 200);
+        });
+        
+        // オリエンテーション変更時の対応（モバイル）
+        window.addEventListener('orientationchange', function() {
+            setTimeout(() => {
+                forceChartResize();
+            }, 600);
+        });
+        
+        // Iframe読み込み完了時の追加処理
+        if (window.self !== window.top) { // iframe内で実行中
+            window.addEventListener('message', function(event) {
+                if (event.data === 'resize') {
+                    setTimeout(() => {
+                        forceChartResize();
+                    }, 100);
+                }
+            });
+        }
+        
+        function updateTimestamp(timestamp) {
+            try {
+                const updatedAt = new Date(timestamp);
+                if (!isNaN(updatedAt.getTime())) {
+                    const formattedTime = updatedAt.toLocaleString('ja-JP', {
+                        timeZone: 'Asia/Tokyo',
+                        year: 'numeric',
+                        month: '2-digit', 
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                    
+                    const timestampElement = document.querySelector('.timestamp-info');
+                    if (timestampElement) {
+                        timestampElement.textContent = `Last updated: ${formattedTime}`;
+                    }
+                    
+                    console.log('📅 Timestamp updated:', formattedTime);
+                } else {
+                    console.warn('⚠️ Invalid timestamp format:', timestamp);
+                }
+            } catch (error) {
+                console.error('❌ Error updating timestamp:', error);
+            }
+        }
+        
+        // 内定数KPIテーブル更新関数（総受KPIテーブル更新関数の内定数版）
+        function updateNaiteiKpiTable(tableData) {
+            try {
+                console.log('📊 Starting Naitei KPI table update with data:', tableData);
+                
+                if (!tableData || !tableData.naitei_kpi) {
+                    console.warn('⚠️ No Naitei KPI data provided');
+                    return;
+                }
+                
+                const naiteiKpiData = tableData.naitei_kpi;
+                
+                // 数値を千の位区切りでフォーマット
+                const formatNumber = (num) => {
+                    if (typeof num === 'number' && !isNaN(num)) {
+                        return num.toLocaleString() + '件';
+                    }
+                    return '0件';
+                };
+                
+                // 成長率をフォーマット
+                const formatGrowthRate = (rate) => {
+                    if (rate === null || rate === undefined || isNaN(rate)) {
+                        return '-';
+                    }
+                    return (rate >= 0 ? '+' : '') + rate + '%';
+                };
+                
+                // 成長率のCSSクラス取得
+                const getGrowthClass = (rate) => {
+                    if (rate === null || rate === undefined || isNaN(rate)) {
+                        return '';
+                    }
+                    return rate > 0 ? 'positive' : (rate < 0 ? 'negative' : '');
+                };
+                
+                // KPI数値を更新
+                const updateElement = (id, value) => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.textContent = value;
+                        console.log(`✅ Updated ${id}: ${value}`);
+                    } else {
+                        console.warn(`⚠️ Element ${id} not found`);
+                    }
+                };
+                
+                // 基本KPI値の更新
+                updateElement('naitei-kpi-latest', formatNumber(naiteiKpiData.latest_naitei));
+                updateElement('naitei-kpi-prev-day', formatNumber(naiteiKpiData.prev_day_naitei));
+                updateElement('naitei-kpi-prev-week', formatNumber(naiteiKpiData.prev_week_naitei));
+                updateElement('naitei-kpi-prev-year', formatNumber(naiteiKpiData.prev_year_naitei));
+                
+                // 成長率の更新（スタイル適用込み）
+                const updateGrowthElement = (id, rate) => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.textContent = formatGrowthRate(rate);
+                        // 既存のクラスをクリア
+                        element.classList.remove('positive', 'negative');
+                        // 新しいクラスを追加
+                        const growthClass = getGrowthClass(rate);
+                        if (growthClass) {
+                            element.classList.add(growthClass);
+                        }
+                        console.log(`✅ Updated growth ${id}: ${formatGrowthRate(rate)} (class: ${growthClass})`);
+                    } else {
+                        console.warn(`⚠️ Growth element ${id} not found`);
+                    }
+                };
+                
+                updateGrowthElement('naitei-kpi-day-growth', naiteiKpiData.day_growth_rate);
+                updateGrowthElement('naitei-kpi-week-growth', naiteiKpiData.week_growth_rate);
+                updateGrowthElement('naitei-kpi-year-growth', naiteiKpiData.year_growth_rate);
+                
+                console.log('✅ Naitei KPI table update completed successfully');
+                
+            } catch (error) {
+                console.error('❌ Error updating Naitei KPI table:', error);
+            }
+        }
+    </script>
+</body>
+</html>
