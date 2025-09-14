@@ -18,35 +18,50 @@
         .container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .header { 
             background: linear-gradient(135deg, #7B68EE 0%, #663399 50%, #4B0082 100%);
-            color: white; padding: 30px; border-radius: 8px 8px 0 0; position: relative;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            color: white; padding: 15px 20px; border-radius: 8px 8px 0 0; position: relative;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .header-content { display: flex; align-items: center; justify-content: space-between; }
         .header-left { display: flex; align-items: center; }
         .header-icon { 
-            width: 48px; height: 48px; background: rgba(255,255,255,0.2); 
+            width: 32px; height: 32px; background: rgba(255,255,255,0.2); 
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            margin-right: 20px; font-size: 24px;
+            margin-right: 12px; font-size: 16px;
         }
         .header-text h1 { 
-            margin: 0; font-size: 32px; font-weight: 700; 
+            margin: 0; font-size: 20px; font-weight: 600; 
             text-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
-        .header-text .subtitle { 
-            font-size: 16px; opacity: 0.9; margin: 4px 0 8px 0; font-weight: 400;
+        .header-text .date { 
+            font-size: 12px; font-weight: 400; margin-top: 2px; opacity: 0.9;
         }
-        .header-text .date { font-size: 18px; font-weight: 600; }
-        .header-right { display: flex; align-items: center; gap: 15px; }
-        .detail-button { 
-            background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3);
-            color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none;
-            font-size: 14px; font-weight: 600; transition: all 0.3s ease;
-            cursor: pointer;
+        .header-right { display: flex; align-items: center; gap: 8px; }
+        .update-button { 
+            background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+            color: white; padding: 6px 10px; border-radius: 4px; text-decoration: none;
+            font-size: 11px; font-weight: 500; transition: all 0.3s ease;
+            cursor: pointer; opacity: 0.8; display: flex; align-items: center; gap: 4px;
         }
-        .detail-button:hover { background: rgba(255,255,255,0.3); }
+        .update-button:hover { background: rgba(255,255,255,0.25); opacity: 1; }
+        .update-button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .update-time { 
+            font-size: 10px; opacity: 0.7; color: white;
+            white-space: nowrap; display: flex; align-items: center; gap: 3px;
+        }
+        .status-indicator { 
+            width: 6px; height: 6px; border-radius: 50%; display: inline-block;
+        }
+        .status-indicator.loading { background: #4FC3F7; animation: pulse 1.5s infinite; }
+        .status-indicator.success { background: #4CAF50; }
+        .status-indicator.error { background: #f44336; }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
         .header .generated { 
-            font-size: 11px; opacity: 0.7; margin-top: 8px;
-            position: absolute; bottom: 15px; right: 30px;
+            font-size: 10px; opacity: 0.6; margin-top: 4px;
+            position: absolute; bottom: 8px; right: 20px;
         }
         .content { padding: 25px; }
         .section-title { 
@@ -89,19 +104,25 @@
         
         /* モバイル専用スタイル */
         @media (max-width: 768px) {
-            body { padding: 10px; margin: 0; box-sizing: border-box; }
+            body { padding: 5px; margin: 0; box-sizing: border-box; }
             .container { 
                 border-radius: 4px; 
                 width: 100%; 
                 max-width: 100%;
                 overflow-x: hidden; /* 横スクロール防止 */
             }
-            .header { padding: 20px; }
-            .header-content { flex-direction: column; gap: 15px; text-align: center; }
-            .header-left { justify-content: center; }
-            .header-text h1 { font-size: 24px; }
-            .header-text .subtitle { font-size: 14px; }
-            .header-text .date { font-size: 16px; }
+            .header { padding: 12px 15px; }
+            .header-content { align-items: center; }
+            .header-left { min-width: 0; }
+            .header-right { gap: 6px; }
+            .header-icon { 
+                width: 28px; height: 28px; font-size: 14px;
+                margin-right: 8px;
+            }
+            .header-text h1 { font-size: 16px; }
+            .header-text .date { font-size: 11px; }
+            .update-button { padding: 5px 8px; font-size: 10px; }
+            .update-time { font-size: 9px; }
             .content { 
                 padding: 15px; 
                 width: 100%;
@@ -145,21 +166,67 @@
         
         /* 小型モバイル専用スタイル */
         @media (max-width: 480px) {
-            body { padding: 5px; }
-            .header { padding: 15px; }
-            .header-text h1 { font-size: 20px; }
-            .header-text .subtitle { font-size: 13px; }
-            .content { padding: 10px; }
-            .chart-canvas { height: 200px; }
-            .chart-container { padding: 10px; }
-            .chart-title { font-size: 14px; }
-            
-            /* ヘッダーボタンを下に配置 */
-            .detail-button { 
-                padding: 8px 16px; 
-                font-size: 13px;
-                margin-top: 10px;
+            body { padding: 2px; }
+            .header { padding: 10px 12px; }
+            .header-icon { 
+                width: 24px; height: 24px; font-size: 12px;
+                margin-right: 6px;
             }
+            .header-text h1 { font-size: 14px; }
+            .header-text .date { font-size: 10px; }
+            .content { padding: 8px; }
+            .chart-canvas { height: 200px; }
+            .chart-container { padding: 8px; }
+            .chart-title { font-size: 14px; }
+        }
+        
+        /* KPIテーブルスタイル（集客モニタリングから移植） */
+        .kpi-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-bottom: 30px; 
+            table-layout: fixed; 
+        }
+        .kpi-table th, .kpi-table td { 
+            padding: 8px 6px; 
+            text-align: center; 
+            border: 1px solid #ddd; 
+            word-wrap: break-word;
+        }
+        .kpi-table th { background-color: #495057; color: white; font-weight: bold; font-size: 13px; }
+        .kpi-table td { background-color: #f8f9fa; font-size: 13px; }
+        .kpi-table .metric { background-color: #ffffff; font-weight: bold; text-align: left; }
+        .kpi-table .current { background-color: #fff3cd; font-weight: bold; font-size: 14px; }
+        
+        /* 内定数動向テーブル（8列）の列幅 */
+        .kpi-table.main-kpi th:nth-child(1) { width: 15%; }  /* 指標 */
+        .kpi-table.main-kpi th:nth-child(2) { width: 13%; }  /* 当日 */
+        .kpi-table.main-kpi th:nth-child(3) { width: 13%; }  /* 前日 */
+        .kpi-table.main-kpi th:nth-child(4) { width: 12%; }  /* 前日比 */
+        .kpi-table.main-kpi th:nth-child(5) { width: 13%; }  /* 前週同日 */
+        .kpi-table.main-kpi th:nth-child(6) { width: 12%; }  /* 前週比 */
+        .kpi-table.main-kpi th:nth-child(7) { width: 13%; }  /* 前年同日 */
+        .kpi-table.main-kpi th:nth-child(8) { width: 12%; }  /* 前年比 */
+        
+        .growth { font-weight: bold; }
+        .growth.positive { color: #28a745; }
+        .growth.negative { color: #dc3545; }
+        
+        /* KPIテーブルのモバイル対応 */
+        @media (max-width: 768px) {
+            .kpi-table { font-size: 11px; }
+            .kpi-table th, .kpi-table td { padding: 6px 4px; }
+            .kpi-table th { font-size: 11px; }
+            .kpi-table td { font-size: 11px; }
+        }
+        
+        /* 小型モバイル専用スタイル */
+        @media (max-width: 480px) {
+            /* 超小型テーブルスタイル */
+            .kpi-table { font-size: 10px; }
+            .kpi-table th, .kpi-table td { padding: 4px 3px; }
+            .kpi-table th { font-size: 10px; }
+            .kpi-table td { font-size: 10px; }
         }
         
         .footer { text-align: center; padding: 20px; color: #6c757d; font-size: 12px; }
@@ -172,16 +239,20 @@
                 <div class="header-left">
                     <div class="header-icon">📊</div>
                     <div class="header-text">
-                        <h1>リクルートエージェント全体モニタリング</h1>
-                        <div class="subtitle">総受推移グラフ・全体トレンド分析レポート</div>
-                        <div class="date" id="reportDate">データ読み込み中...</div>
+                        <h1>全体モニタリング</h1>
+                        <div class="date" id="reportDate">読み込み中...</div>
                     </div>
                 </div>
                 <div class="header-right">
-                    <button class="detail-button" onclick="toggleDetails()">詳細を表示 →</button>
+                    <div class="update-time" id="updateTime">
+                        <span class="status-indicator success" id="statusIndicator"></span>
+                        <span id="lastUpdateText">-</span>
+                    </div>
+                    <button class="update-button" id="updateButton" onclick="requestDataUpdate()">
+                        <span id="updateButtonText">更新</span>
+                    </button>
                 </div>
             </div>
-            <div class="generated" id="generatedTime">Generated at データ読み込み中...</div>
         </div>
         
         <div class="content">
@@ -190,13 +261,13 @@
             <div class="charts-section">
                 <div class="chart-grid">
                     <div class="chart-container">
-                        <div class="chart-title">デイリー総受推移（8月 対前年比較）</div>
+                        <div class="chart-title" id="daily-souke-title">デイリー総受推移（今月 対前年比較）</div>
                         <div class="chart-canvas">
                             <canvas id="dailyChart"></canvas>
                         </div>
                     </div>
                     <div class="chart-container">
-                        <div class="chart-title">累計総受推移（8月 対前年比較）</div>
+                        <div class="chart-title" id="cumulative-souke-title">累計総受推移（今月 対前年比較）</div>
                         <div class="chart-canvas">
                             <canvas id="cumulativeChart"></canvas>
                         </div>
@@ -204,7 +275,7 @@
                 </div>
                 <div class="chart-grid-bottom">
                     <div class="chart-container">
-                        <div class="chart-title">週次総受推移（6-8月 対前年比較）</div>
+                        <div class="chart-title" id="weekly-souke-title">週次総受推移（直近3ヶ月 対前年比較）</div>
                         <div class="chart-canvas">
                             <canvas id="weeklyChart"></canvas>
                         </div>
@@ -217,13 +288,13 @@
             <div class="charts-section">
                 <div class="chart-grid">
                     <div class="chart-container">
-                        <div class="chart-title">デイリー内定数推移（8月 対前年比較）</div>
+                        <div class="chart-title" id="daily-naitei-title">デイリー内定数推移（今月 対前年比較）</div>
                         <div class="chart-canvas">
                             <canvas id="dailyNaiteiChart"></canvas>
                         </div>
                     </div>
                     <div class="chart-container">
-                        <div class="chart-title">累計内定数推移（8月 対前年比較）</div>
+                        <div class="chart-title" id="cumulative-naitei-title">累計内定数推移（今月 対前年比較）</div>
                         <div class="chart-canvas">
                             <canvas id="cumulativeNaiteiChart"></canvas>
                         </div>
@@ -231,13 +302,42 @@
                 </div>
                 <div class="chart-grid-bottom">
                     <div class="chart-container">
-                        <div class="chart-title">週次内定数推移（6-8月 対前年比較）</div>
+                        <div class="chart-title" id="weekly-naitei-title">週次内定数推移（直近3ヶ月 対前年比較）</div>
                         <div class="chart-canvas">
                             <canvas id="weeklyNaiteiChart"></canvas>
                         </div>
                     </div>
                 </div>
             </div>
+            
+            <!-- 内定数動向テーブル -->
+            <div class="section-title">📈 内定数動向</div>
+            <table class="kpi-table main-kpi">
+                <thead>
+                    <tr>
+                        <th>指標</th>
+                        <th>当日</th>
+                        <th>前日</th>
+                        <th>前日比</th>
+                        <th>前週同日</th>
+                        <th>前週比</th>
+                        <th>前年同日</th>
+                        <th>前年比</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="metric">内定数</td>
+                        <td class="current" id="naitei-kpi-latest">読み込み中...</td>
+                        <td id="naitei-kpi-prev-day">読み込み中...</td>
+                        <td class="growth" id="naitei-kpi-day-growth">計算中...</td>
+                        <td id="naitei-kpi-prev-week">読み込み中...</td>
+                        <td class="growth" id="naitei-kpi-week-growth">計算中...</td>
+                        <td id="naitei-kpi-prev-year">読み込み中...</td>
+                        <td class="growth" id="naitei-kpi-year-growth">計算中...</td>
+                    </tr>
+                </tbody>
+            </table>
             
         </div>
         
@@ -293,7 +393,14 @@
                 // タイムスタンプ更新
                 if (event.data.data.metadata && event.data.data.metadata.lastUpdated) {
                     updateTimestamp(event.data.data.metadata.lastUpdated);
+                    updateHeaderTime(event.data.data.metadata.lastUpdated);
                 }
+            } else if (event.data && event.data.type === 'UPDATE_TABLE_DATA') {
+                console.log('📊 Received table data update from parent:', event.data.data);
+                updateNaiteiKpiTable(event.data.data);
+            } else if (event.data && event.data.type === 'UPDATE_STATUS') {
+                console.log('📊 Received status update from parent:', event.data.status);
+                updateHeaderStatus(event.data.status);
             }
         });
         
@@ -538,20 +645,25 @@
         // === 内定数グラフセクション ===
         console.log('🎨 Initializing naitei charts...');
         
-        // 8月全日付のラベル配列を生成（x軸範囲固定用）
-        const augustLabels = [];
-        for (let day = 1; day <= 31; day++) {
-            augustLabels.push(`8/${day}`);
+        
+        // 現在月全日付のラベル配列を生成（x軸範囲動的設定）
+        const currentDate = new Date();
+        const currentMonth = currentDate.getMonth() + 1; // 1-12
+        const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+        
+        const currentMonthLabels = [];
+        for (let day = 1; day <= daysInMonth; day++) {
+            currentMonthLabels.push(`${currentMonth}/${day}`);
         }
         
-        // 内定数グラフ用の設定（x軸範囲を8月全体に固定）
+        // 内定数グラフ用の設定（x軸範囲を現在月全体に動的設定）
         const naiteiOptions = {
             ...commonOptions,
             scales: {
                 ...commonOptions.scales,
                 x: {
                     ...commonOptions.scales.x,
-                    labels: augustLabels  // 8月全体を表示
+                    labels: currentMonthLabels  // 現在月全体を表示
                 }
             }
         };
@@ -561,14 +673,15 @@
         const dailyNaiteiChart = new Chart(dailyNaiteiCtx, {
             type: 'line',
             data: {
-                labels: augustLabels,  // 固定ラベル設定
+                labels: currentMonthLabels,  // 固定ラベル設定
                 datasets: [{
                     label: '2025年内定数',
                     data: chartData.naitei.daily['2025'],
                     borderColor: '#9467bd',
                     backgroundColor: 'rgba(148, 103, 189, 0.1)',
                     tension: 0.2,
-                    fill: false
+                    fill: false,
+                    spanGaps: false  // 現在日以降で線を切断
                 }, {
                     label: '2024年内定数', 
                     data: chartData.naitei.daily['2024'],
@@ -576,7 +689,8 @@
                     backgroundColor: 'rgba(214, 39, 40, 0.1)',
                     borderDash: [5, 5],
                     tension: 0.2,
-                    fill: false
+                    fill: false,
+                    spanGaps: false  // データがない日は線を切断
                 }]
             },
             options: naiteiOptions  // 内定数用の設定を使用
@@ -588,14 +702,15 @@
         const cumulativeNaiteiChart = new Chart(cumulativeNaiteiCtx, {
             type: 'line',
             data: {
-                labels: augustLabels,  // 固定ラベル設定
+                labels: currentMonthLabels,  // 固定ラベル設定
                 datasets: [{
                     label: '2025年累計内定数',
                     data: chartData.naitei.cumulative['2025'],
                     borderColor: '#9467bd',
                     backgroundColor: 'rgba(148, 103, 189, 0.2)',
                     tension: 0.2,
-                    fill: true
+                    fill: true,
+                    spanGaps: false  // 現在日以降で線を切断
                 }, {
                     label: '2024年累計内定数',
                     data: chartData.naitei.cumulative['2024'],
@@ -603,7 +718,8 @@
                     backgroundColor: 'rgba(214, 39, 40, 0.1)',
                     borderDash: [5, 5], 
                     tension: 0.2,
-                    fill: true
+                    fill: true,
+                    spanGaps: false  // データがない日は線を切断
                 }]
             },
             options: naiteiOptions  // 内定数用の設定を使用
@@ -665,25 +781,83 @@
         chartInstances.push(weeklyNaiteiChart);
         
         console.log('✅ All charts (souke + naitei) initialized successfully');
+        } // initializeCharts関数の終了
         
-        // 詳細表示トグル機能（Weekly Brief風）
-        let detailsVisible = true;
-        
-        function toggleDetails() {
-            const button = document.querySelector('.detail-button');
-            const chartsSection = document.querySelector('.charts-section');
+        // ヘッダーの更新ボタン状態管理
+        function updateHeaderStatus(status) {
+            const indicator = document.getElementById('statusIndicator');
+            const button = document.getElementById('updateButton');
+            const buttonText = document.getElementById('updateButtonText');
             
-            detailsVisible = !detailsVisible;
+            if (!indicator || !button || !buttonText) return;
             
-            if (detailsVisible) {
-                button.innerHTML = '詳細を表示 →';
-                if (chartsSection) chartsSection.style.display = 'block';
-            } else {
-                button.innerHTML = '詳細を非表示 ←';
-                if (chartsSection) chartsSection.style.display = 'none';
+            // 状態に応じてインジケーターとボタンを更新
+            indicator.className = 'status-indicator';
+            
+            switch (status) {
+                case 'loading':
+                    indicator.classList.add('loading');
+                    button.disabled = true;
+                    buttonText.textContent = '更新中...';
+                    break;
+                case 'success':
+                    indicator.classList.add('success');
+                    button.disabled = false;
+                    buttonText.textContent = '更新';
+                    break;
+                case 'error':
+                    indicator.classList.add('error');
+                    button.disabled = false;
+                    buttonText.textContent = '更新';
+                    break;
+                default:
+                    indicator.classList.add('success');
+                    button.disabled = false;
+                    buttonText.textContent = '更新';
             }
         }
-        } // initializeCharts関数の終了
+        
+        // ヘッダーの時間表示更新
+        function updateHeaderTime(timestamp) {
+            const timeElement = document.getElementById('lastUpdateText');
+            if (!timeElement || !timestamp) return;
+            
+            try {
+                const updateTime = new Date(timestamp);
+                const now = new Date();
+                const diffMinutes = Math.floor((now - updateTime) / (1000 * 60));
+                
+                let timeText;
+                if (diffMinutes < 1) {
+                    timeText = '今';
+                } else if (diffMinutes < 60) {
+                    timeText = `${diffMinutes}分前`;
+                } else {
+                    timeText = updateTime.toLocaleDateString('ja-JP', {
+                        month: 'numeric',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                }
+                
+                timeElement.textContent = timeText;
+            } catch (error) {
+                console.warn('⚠️ Error updating header time:', error);
+                timeElement.textContent = '-';
+            }
+        }
+        
+        // データ更新要求を親ウィンドウに送信
+        function requestDataUpdate() {
+            console.log('📤 Requesting data update from iframe');
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'REQUEST_DATA_UPDATE',
+                    source: 'zentai-monitoring'
+                }, '*');
+            }
+        }
         
         // 初期化実行
         initializeCharts();
@@ -778,6 +952,88 @@
                 }
             } catch (error) {
                 console.error('❌ Error updating timestamp:', error);
+            }
+        }
+        
+        // 内定数KPIテーブル更新関数（総受KPIテーブル更新関数の内定数版）
+        function updateNaiteiKpiTable(tableData) {
+            try {
+                console.log('📊 Starting Naitei KPI table update with data:', tableData);
+                
+                if (!tableData || !tableData.naitei_kpi) {
+                    console.warn('⚠️ No Naitei KPI data provided');
+                    return;
+                }
+                
+                const naiteiKpiData = tableData.naitei_kpi;
+                
+                // 数値を千の位区切りでフォーマット
+                const formatNumber = (num) => {
+                    if (typeof num === 'number' && !isNaN(num)) {
+                        return num.toLocaleString() + '件';
+                    }
+                    return '0件';
+                };
+                
+                // 成長率をフォーマット
+                const formatGrowthRate = (rate) => {
+                    if (rate === null || rate === undefined || isNaN(rate)) {
+                        return '-';
+                    }
+                    return (rate >= 0 ? '+' : '') + rate + '%';
+                };
+                
+                // 成長率のCSSクラス取得
+                const getGrowthClass = (rate) => {
+                    if (rate === null || rate === undefined || isNaN(rate)) {
+                        return '';
+                    }
+                    return rate > 0 ? 'positive' : (rate < 0 ? 'negative' : '');
+                };
+                
+                // KPI数値を更新
+                const updateElement = (id, value) => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.textContent = value;
+                        console.log(`✅ Updated ${id}: ${value}`);
+                    } else {
+                        console.warn(`⚠️ Element ${id} not found`);
+                    }
+                };
+                
+                // 基本KPI値の更新
+                updateElement('naitei-kpi-latest', formatNumber(naiteiKpiData.latest_naitei));
+                updateElement('naitei-kpi-prev-day', formatNumber(naiteiKpiData.prev_day_naitei));
+                updateElement('naitei-kpi-prev-week', formatNumber(naiteiKpiData.prev_week_naitei));
+                updateElement('naitei-kpi-prev-year', formatNumber(naiteiKpiData.prev_year_naitei));
+                
+                // 成長率の更新（スタイル適用込み）
+                const updateGrowthElement = (id, rate) => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.textContent = formatGrowthRate(rate);
+                        // 既存のクラスをクリア
+                        element.classList.remove('positive', 'negative');
+                        // 新しいクラスを追加
+                        const growthClass = getGrowthClass(rate);
+                        if (growthClass) {
+                            element.classList.add(growthClass);
+                        }
+                        console.log(`✅ Updated growth ${id}: ${formatGrowthRate(rate)} (class: ${growthClass})`);
+                    } else {
+                        console.warn(`⚠️ Growth element ${id} not found`);
+                    }
+                };
+                
+                updateGrowthElement('naitei-kpi-day-growth', naiteiKpiData.day_growth_rate);
+                updateGrowthElement('naitei-kpi-week-growth', naiteiKpiData.week_growth_rate);
+                updateGrowthElement('naitei-kpi-year-growth', naiteiKpiData.year_growth_rate);
+                
+                console.log('✅ Naitei KPI table update completed successfully');
+                
+            } catch (error) {
+                console.error('❌ Error updating Naitei KPI table:', error);
             }
         }
     </script>

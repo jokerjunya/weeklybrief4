@@ -19,35 +19,50 @@
         .container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .header { 
             background: linear-gradient(135deg, #4A90E2 0%, #357ABD 50%, #1E3A8A 100%);
-            color: white; padding: 30px; border-radius: 8px 8px 0 0; position: relative;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            color: white; padding: 15px 20px; border-radius: 8px 8px 0 0; position: relative;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .header-content { display: flex; align-items: center; justify-content: space-between; }
         .header-left { display: flex; align-items: center; }
         .header-icon { 
-            width: 48px; height: 48px; background: rgba(255,255,255,0.2); 
+            width: 32px; height: 32px; background: rgba(255,255,255,0.2); 
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            margin-right: 20px; font-size: 24px;
+            margin-right: 12px; font-size: 16px;
         }
         .header-text h1 { 
-            margin: 0; font-size: 32px; font-weight: 700; 
+            margin: 0; font-size: 20px; font-weight: 600; 
             text-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
-        .header-text .subtitle { 
-            font-size: 16px; opacity: 0.9; margin: 4px 0 8px 0; font-weight: 400;
+        .header-text .date { 
+            font-size: 12px; font-weight: 400; margin-top: 2px; opacity: 0.9;
         }
-        .header-text .date { font-size: 18px; font-weight: 600; }
-        .header-right { display: flex; align-items: center; gap: 15px; }
-        .detail-button { 
-            background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3);
-            color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none;
-            font-size: 14px; font-weight: 600; transition: all 0.3s ease;
-            cursor: pointer;
+        .header-right { display: flex; align-items: center; gap: 8px; }
+        .update-button { 
+            background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+            color: white; padding: 6px 10px; border-radius: 4px; text-decoration: none;
+            font-size: 11px; font-weight: 500; transition: all 0.3s ease;
+            cursor: pointer; opacity: 0.8; display: flex; align-items: center; gap: 4px;
         }
-        .detail-button:hover { background: rgba(255,255,255,0.3); }
+        .update-button:hover { background: rgba(255,255,255,0.25); opacity: 1; }
+        .update-button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .update-time { 
+            font-size: 10px; opacity: 0.7; color: white;
+            white-space: nowrap; display: flex; align-items: center; gap: 3px;
+        }
+        .status-indicator { 
+            width: 6px; height: 6px; border-radius: 50%; display: inline-block;
+        }
+        .status-indicator.loading { background: #4FC3F7; animation: pulse 1.5s infinite; }
+        .status-indicator.success { background: #4CAF50; }
+        .status-indicator.error { background: #f44336; }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
         .header .generated { 
-            font-size: 11px; opacity: 0.7; margin-top: 8px;
-            position: absolute; bottom: 15px; right: 30px;
+            font-size: 10px; opacity: 0.6; margin-top: 4px;
+            position: absolute; bottom: 8px; right: 20px;
         }
         .content { padding: 25px; }
         .section-title { 
@@ -90,19 +105,25 @@
         
         /* モバイル専用スタイル */
         @media (max-width: 768px) {
-            body { padding: 10px; margin: 0; box-sizing: border-box; }
+            body { padding: 5px; margin: 0; box-sizing: border-box; }
             .container { 
                 border-radius: 4px; 
                 width: 100%; 
                 max-width: 100%;
                 overflow-x: hidden; /* 横スクロール防止 */
             }
-            .header { padding: 20px; }
-            .header-content { flex-direction: column; gap: 15px; text-align: center; }
-            .header-left { justify-content: center; }
-            .header-text h1 { font-size: 24px; }
-            .header-text .subtitle { font-size: 14px; }
-            .header-text .date { font-size: 16px; }
+            .header { padding: 12px 15px; }
+            .header-content { align-items: center; }
+            .header-left { min-width: 0; }
+            .header-right { gap: 6px; }
+            .header-icon { 
+                width: 28px; height: 28px; font-size: 14px;
+                margin-right: 8px;
+            }
+            .header-text h1 { font-size: 16px; }
+            .header-text .date { font-size: 11px; }
+            .update-button { padding: 5px 8px; font-size: 10px; }
+            .update-time { font-size: 9px; }
             .content { 
                 padding: 15px; 
                 width: 100%;
@@ -146,13 +167,17 @@
         
         /* 小型モバイル専用スタイル */
         @media (max-width: 480px) {
-            body { padding: 5px; }
-            .header { padding: 15px; }
-            .header-text h1 { font-size: 20px; }
-            .header-text .subtitle { font-size: 13px; }
-            .content { padding: 10px; }
+            body { padding: 2px; }
+            .header { padding: 10px 12px; }
+            .header-icon { 
+                width: 24px; height: 24px; font-size: 12px;
+                margin-right: 6px;
+            }
+            .header-text h1 { font-size: 14px; }
+            .header-text .date { font-size: 10px; }
+            .content { padding: 8px; }
             .chart-canvas { height: 200px; }
-            .chart-container { padding: 10px; }
+            .chart-container { padding: 8px; }
             .chart-title { font-size: 14px; }
             
             /* 超小型テーブルスタイル */
@@ -273,16 +298,20 @@
                 <div class="header-left">
                     <div class="header-icon">📊</div>
                     <div class="header-text">
-                        <h1>リクルートエージェント総受日報</h1>
-                        <div class="subtitle">日次総受実績・トレンド分析レポート</div>
-                        <div class="date" id="reportDate">データ読み込み中...</div>
+                        <h1>総受日報</h1>
+                        <div class="date" id="reportDate">読み込み中...</div>
                     </div>
                 </div>
                 <div class="header-right">
-                    <button class="detail-button" onclick="toggleDetails()">詳細を表示 →</button>
+                    <div class="update-time" id="updateTime">
+                        <span class="status-indicator success" id="statusIndicator"></span>
+                        <span id="lastUpdateText">-</span>
+                    </div>
+                    <button class="update-button" id="updateButton" onclick="requestDataUpdate()">
+                        <span id="updateButtonText">更新</span>
+                    </button>
                 </div>
             </div>
-            <div class="generated" id="generatedTime">Generated at データ読み込み中...</div>
         </div>
         
         <div class="content">
@@ -291,13 +320,13 @@
             <div class="charts-section">
                 <div class="chart-grid">
                     <div class="chart-container">
-                        <div class="chart-title">デイリー総受推移（8月 対前年比較）</div>
+                        <div class="chart-title" id="daily-souke-title">デイリー総受推移（今月 対前年比較）</div>
                         <div class="chart-canvas">
                             <canvas id="dailyChart"></canvas>
                         </div>
                     </div>
                     <div class="chart-container">
-                        <div class="chart-title">累計総受推移（8月 対前年比較）</div>
+                        <div class="chart-title" id="cumulative-souke-title">累計総受推移（今月 対前年比較）</div>
                         <div class="chart-canvas">
                             <canvas id="cumulativeChart"></canvas>
                         </div>
@@ -305,7 +334,7 @@
                 </div>
                 <div class="chart-grid-bottom">
                     <div class="chart-container">
-                        <div class="chart-title">週次総受推移（6-8月 対前年比較）</div>
+                        <div class="chart-title" id="weekly-souke-title">週次総受推移（直近3ヶ月 対前年比較）</div>
                         <div class="chart-canvas">
                             <canvas id="weeklyChart"></canvas>
                         </div>
@@ -451,40 +480,30 @@
             // if (event.origin !== 'https://your-domain.netlify.app') return;
             
             if (event.data && event.data.type === 'UPDATE_CHART_DATA') {
-                console.log('🔄 Chart.js iframe: Received UPDATE_CHART_DATA message');
-                console.log('📊 Chart.js iframe: event.data.data typeof:', typeof event.data.data);
-                console.log('📊 Chart.js iframe: event.data.data keys:', Object.keys(event.data.data || {}));
-                console.log('📊 Chart.js iframe: event.data.data.souke exists:', !!(event.data.data?.souke));
-                console.log('📊 Chart.js iframe: Full received data:', JSON.stringify(event.data.data, null, 2));
+                console.log('📊 Chart.js: Received chart data update');
                 updateChartsWithNewData(event.data.data);
                 
                 // タイムスタンプ更新
                 if (event.data.data.metadata && event.data.data.metadata.lastUpdated) {
                     updateTimestamp(event.data.data.metadata.lastUpdated);
+                    updateHeaderTime(event.data.data.metadata.lastUpdated);
                 }
             } else if (event.data && event.data.type === 'UPDATE_TABLE_DATA') {
                 console.log('📊 Received table data update from parent:', event.data.data);
                 updateKpiTable(event.data.data);
                 updateChannelOverviewTable(event.data.data);
                 updateChannelDetailTable(event.data.data);
+            } else if (event.data && event.data.type === 'UPDATE_STATUS') {
+                console.log('📊 Received status update from parent:', event.data.status);
+                updateHeaderStatus(event.data.status);
             }
         });
         
         // チャートデータ更新関数
         function updateChartsWithNewData(newData) {
-            console.log('📊 Chart.js: updateChartsWithNewData called');
-            console.log('📊 Chart.js: newData structure:', Object.keys(newData || {}));
-            console.log('📊 Chart.js: newData.souke exists:', !!newData?.souke);
-            console.log('📊 Chart.js: newData.souke.daily exists:', !!newData?.souke?.daily);
-            console.log('📊 Chart.js: newData.souke.daily["2025"] length:', newData?.souke?.daily?.['2025']?.length || 0);
             try {
-                console.log('📊 Updating charts with new data...');
-                
                 // グローバルchartDataを更新
-                console.log('📊 Chart.js: Before chartData assignment - old chartData:', Object.keys(chartData || {}));
                 chartData = newData;
-                console.log('📊 Chart.js: After chartData assignment - new chartData:', Object.keys(chartData || {}));
-                console.log('📊 Chart.js: chartData.souke exists after assignment:', !!(chartData?.souke));
                 
                 // データが正しくない場合の緊急停止
                 if (!chartData || !chartData.souke) {
@@ -498,7 +517,6 @@
                 chartInstances.forEach((chart, index) => {
                     if (chart && typeof chart.destroy === 'function') {
                         chart.destroy();
-                        console.log(`Chart ${index} destroyed`);
                     }
                 });
                 chartInstances.length = 0; // 配列をクリア
@@ -613,22 +631,12 @@
         
         // チャート初期化関数（統合データ構造対応：全体モニタリングと同じ）
         function initializeCharts() {
-            console.log('🎨 Chart.js: initializeCharts called');
-            console.log('🎨 Chart.js: chartData structure:', Object.keys(chartData || {}));
-            console.log('🎨 Chart.js: chartData.souke exists:', !!chartData?.souke);
-            console.log('🎨 Chart.js: DOM elements check:');
-            console.log('  - dailyChart element:', !!document.getElementById('dailyChart'));
-            console.log('  - cumulativeChart element:', !!document.getElementById('cumulativeChart'));
-            console.log('  - weeklyChart element:', !!document.getElementById('weeklyChart'));
             
             // === 総受グラフセクション（全体モニタリングから移植）===
             
             // デイリー総受チャート
             try {
-                console.log('📊 Chart.js: Creating daily chart...');
                 const dailyCtx = document.getElementById('dailyChart').getContext('2d');
-                console.log('📊 Chart.js: Daily data 2025:', chartData.souke?.daily?.['2025']?.length || 0, 'points');
-                console.log('📊 Chart.js: Daily data 2024:', chartData.souke?.daily?.['2024']?.length || 0, 'points');
                 
                 const dailyChart = new Chart(dailyCtx, {
                 type: 'line',
@@ -755,11 +763,24 @@
                 return;
             }
             
-            // 8月18日のデータを取得
-            const currentDay = chartData.daily["2025"].find(d => d.x === "8/18");
-            const previousDay = chartData.daily["2025"].find(d => d.x === "8/17");
-            const lastWeekSameDay = chartData.daily["2025"].find(d => d.x === "8/11");
-            const lastYearSameDay = chartData.daily["2024"].find(d => d.x === "8/18");
+            // 最新日のデータを動的取得
+            const latestData = chartData.daily["2025"];
+            if (!latestData || latestData.length === 0) return;
+            
+            // 最新日（データの最後の日付）
+            const currentDay = latestData[latestData.length - 1];
+            const currentDate = currentDay.x; // "M/D"形式
+            
+            // 前日・前週同日・前年同日を動的計算
+            const [month, day] = currentDate.split('/').map(Number);
+            const prevDayStr = day > 1 ? `${month}/${day-1}` : 
+                              month > 1 ? `${month-1}/${new Date(2025, month-2, 0).getDate()}` : "12/31";
+            const weekAgoStr = day > 7 ? `${month}/${day-7}` : 
+                              month > 1 ? `${month-1}/${new Date(2025, month-2, 0).getDate()-(7-day)}` : null;
+            
+            const previousDay = chartData.daily["2025"].find(d => d.x === prevDayStr);
+            const lastWeekSameDay = weekAgoStr ? chartData.daily["2025"].find(d => d.x === weekAgoStr) : null;
+            const lastYearSameDay = chartData.daily["2024"].find(d => d.x === currentDate);
 
             if (currentDay && previousDay && lastWeekSameDay && lastYearSameDay) {
                 // 前日比
@@ -791,30 +812,84 @@
             }
         }
 
-        // 詳細表示トグル機能（Weekly Brief風）
-        let detailsVisible = true;
+        // 詳細表示機能は削除（スリム化のため）
+        } // initializeCharts関数の終了
         
-        function toggleDetails() {
-            const button = document.querySelector('.detail-button');
-            const chartsSection = document.querySelector('.charts-section');
-            const kpiTable = document.querySelector('.kpi-table').closest('div');
-            const channelTable = document.querySelector('.kpi-table').parentNode.nextElementSibling;
+        // ヘッダーの更新ボタン状態管理
+        function updateHeaderStatus(status) {
+            const indicator = document.getElementById('statusIndicator');
+            const button = document.getElementById('updateButton');
+            const buttonText = document.getElementById('updateButtonText');
             
-            detailsVisible = !detailsVisible;
+            if (!indicator || !button || !buttonText) return;
             
-            if (detailsVisible) {
-                button.innerHTML = '詳細を表示 →';
-                if (chartsSection) chartsSection.style.display = 'block';
-                if (kpiTable) kpiTable.style.display = 'block';
-                if (channelTable) channelTable.style.display = 'block';
-            } else {
-                button.innerHTML = '詳細を非表示 ←';
-                if (chartsSection) chartsSection.style.display = 'none';
-                if (kpiTable) kpiTable.style.display = 'none';
-                if (channelTable) channelTable.style.display = 'none';
+            // 状態に応じてインジケーターとボタンを更新
+            indicator.className = 'status-indicator';
+            
+            switch (status) {
+                case 'loading':
+                    indicator.classList.add('loading');
+                    button.disabled = true;
+                    buttonText.textContent = '更新中...';
+                    break;
+                case 'success':
+                    indicator.classList.add('success');
+                    button.disabled = false;
+                    buttonText.textContent = '更新';
+                    break;
+                case 'error':
+                    indicator.classList.add('error');
+                    button.disabled = false;
+                    buttonText.textContent = '更新';
+                    break;
+                default:
+                    indicator.classList.add('success');
+                    button.disabled = false;
+                    buttonText.textContent = '更新';
             }
         }
-        } // initializeCharts関数の終了
+        
+        // ヘッダーの時間表示更新
+        function updateHeaderTime(timestamp) {
+            const timeElement = document.getElementById('lastUpdateText');
+            if (!timeElement || !timestamp) return;
+            
+            try {
+                const updateTime = new Date(timestamp);
+                const now = new Date();
+                const diffMinutes = Math.floor((now - updateTime) / (1000 * 60));
+                
+                let timeText;
+                if (diffMinutes < 1) {
+                    timeText = '今';
+                } else if (diffMinutes < 60) {
+                    timeText = `${diffMinutes}分前`;
+                } else {
+                    timeText = updateTime.toLocaleDateString('ja-JP', {
+                        month: 'numeric',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                }
+                
+                timeElement.textContent = timeText;
+            } catch (error) {
+                console.warn('⚠️ Error updating header time:', error);
+                timeElement.textContent = '-';
+            }
+        }
+        
+        // データ更新要求を親ウィンドウに送信
+        function requestDataUpdate() {
+            console.log('📤 Requesting data update from iframe');
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'REQUEST_DATA_UPDATE',
+                    source: 'souke-report'
+                }, '*');
+            }
+        }
         
         // 初期化実行
         initializeCharts();

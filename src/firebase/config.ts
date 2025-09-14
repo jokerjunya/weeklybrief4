@@ -2,14 +2,14 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 
-// Firebase configuration - weekly-brief-2025
+// Firebase configuration - ATS-Auto-Registerator
 const firebaseConfig = {
-  apiKey: "AIzaSyDJ5oCi5ylGIfkCS_RvE7FeQNaTQBvGhIQ",
-  authDomain: "weekly-brief-2025.firebaseapp.com",
-  projectId: "weekly-brief-2025",
-  storageBucket: "weekly-brief-2025.firebasestorage.app",
-  messagingSenderId: "487940577484",
-  appId: "1:487940577484:web:1d6262da34bd9bb98bca69"
+  apiKey: "AIzaSyCide6yOrsEaRvgYbUzn-ASbJPt8RsiDsA",
+  authDomain: "ats-auto-registerator.firebaseapp.com",
+  projectId: "ats-auto-registerator",
+  storageBucket: "ats-auto-registerator.firebasestorage.app",
+  messagingSenderId: "169041577582",
+  appId: "1:169041577582:web:62ddda37b2344e5705087f"
 };
 
 // Initialize Firebase

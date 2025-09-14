@@ -56,10 +56,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
   }, []);
 
+  // 許可されたユーザーリスト
+  const ALLOWED_USERS = ['jokerjunya@gmail.com'];
+
   // Firebase認証ログイン機能
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       console.log('🔥 Attempting Firebase login...');
+      
+      // メールアドレスのアクセス制限チェック
+      if (!ALLOWED_USERS.includes(email.toLowerCase())) {
+        console.error('❌ Unauthorized email address:', email);
+        return false;
+      }
+      
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       console.log('✅ Firebase login successful:', userCredential.user.email);
       return true;

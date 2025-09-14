@@ -8,11 +8,12 @@
     ],
     "rewrites": [
       {
-        "source": "/api/**",
-        "run": {
-          "serviceId": "bq-proxy",
-          "region": "asia-northeast1"
-        }
+        "source": "/api/run-kpi",
+        "function": "runKpi"
+      },
+      {
+        "source": "/api/health",
+        "function": "health"
       },
       {
         "source": "**",
@@ -41,5 +42,25 @@
     ],
     "cleanUrls": true,
     "trailingSlash": false
-  }
+  },
+  "firestore": {
+    "database": "(default)",
+    "location": "asia-northeast1",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": []
+    }
+  ]
 }

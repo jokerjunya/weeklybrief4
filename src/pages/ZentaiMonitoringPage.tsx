@@ -9,7 +9,7 @@ const ZentaiMonitoringPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const { user, getIdToken } = useAuth();
+  const { user } = useAuth();
   
   // 統合データ更新状態管理（総受データ + 内定数データ）
   const [updateState, setUpdateState] = useState<ZentaiUpdateState>({
@@ -88,10 +88,10 @@ const ZentaiMonitoringPage: React.FC = () => {
       }
 
       // 初回読み込み時にテーブルデータも取得（集客モニタリングと同様）
-      if (user?.id) {
+      if (user?.uid) {
         try {
           console.log('🔄 Loading initial table data...');
-          const token = `custom-auth-${user.id}`;
+          const token = `custom-auth-${user.uid}`;
           const tableResponse = await fetch('/.netlify/functions/get-table-data', {
             method: 'GET',
             headers: {
@@ -131,7 +131,7 @@ const ZentaiMonitoringPage: React.FC = () => {
   
   // 統合データ更新処理（グラフ + 内定数テーブル）
   const handleUpdateChartData = async () => {
-    if (!user?.id || updateState.isUpdating) return;
+    if (!user?.uid || updateState.isUpdating) return;
     
     setUpdateState(prev => ({ 
       ...prev, 
@@ -150,7 +150,7 @@ const ZentaiMonitoringPage: React.FC = () => {
     try {
       console.log('🚀 Fetching fresh zentai chart and table data from BigQuery...');
       
-      const token = `custom-auth-${user.id}`;
+                    const token = `custom-auth-${user.uid}`;
       
       // グラフとテーブルデータを並行取得（集客モニタリングと同じ方式）
       const [chartResponse, tableResponse] = await Promise.all([
@@ -161,7 +161,7 @@ const ZentaiMonitoringPage: React.FC = () => {
             'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify({
-            userId: user.id,
+            userId: user.uid,
             forceUpdate: true
           })
         }),
@@ -196,13 +196,13 @@ const ZentaiMonitoringPage: React.FC = () => {
         const newZentaiData: ZentaiChartData = chartResult.data;
         const newZentaiCache: ZentaiCacheInfo = {
           updatedAt: chartResult.lastUpdated || new Date().toISOString(),
-          updatedBy: user.id,
+          updatedBy: user.uid,
           ageMinutes: 0,
           isExpired: false
         };
         
         // Firebase Zentaiキャッシュに保存
-        await saveZentaiDataToCache(newZentaiData, user.id);
+        await saveZentaiDataToCache(newZentaiData, user.uid);
         
         // 状態を更新
         setChartData(newZentaiData);
@@ -319,7 +319,7 @@ const ZentaiMonitoringPage: React.FC = () => {
               </h1>
               {user && (
                 <span className="text-xs text-gray-500 dark:text-gray-400 hidden md:inline">
-                  ({user.id})
+                  ({user.uid})
                 </span>
               )}
             </div>
@@ -443,10 +443,10 @@ const ZentaiMonitoringPage: React.FC = () => {
                 }
 
                 // 初期テーブルデータも取得して送信（iframe読み込み完了後）
-                if (user?.id) {
+                if (user?.uid) {
                   try {
                     console.log('🔄 Loading initial table data after iframe load...');
-                    const token = `custom-auth-${user.id}`;
+                    const token = `custom-auth-${user.uid}`;
                     const tableResponse = await fetch('/.netlify/functions/get-table-data', {
                       method: 'GET',
                       headers: {

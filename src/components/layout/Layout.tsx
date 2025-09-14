@@ -89,7 +89,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <div className="hidden md:flex items-center space-x-2 px-3 py-1.5 bg-secondary-50 dark:bg-secondary-800/50 rounded-lg">
                   <User className="h-4 w-4 text-secondary-500 dark:text-secondary-400" />
                   <span className="text-sm font-medium text-secondary-700 dark:text-secondary-300">
-                    {user?.id || 'Guest'}
+                    {user?.uid || 'Guest'}
                   </span>
                 </div>
 

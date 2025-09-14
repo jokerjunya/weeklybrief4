@@ -305,7 +305,7 @@ const SoukeReportPage: React.FC = () => {
       if (graphResult.success && graphResult.data) {
         console.log('📊 Chart data received, saving to cache...');
         try {
-          await saveSoukeDataToCache(graphResult.data, user.id);
+          await saveSoukeDataToCache(graphResult.data, user.uid);
           console.log('✅ Souke data cached in Firestore successfully');
         } catch (cacheError) {
           console.warn('⚠️ Graph cache save failed:', cacheError);
@@ -331,7 +331,7 @@ const SoukeReportPage: React.FC = () => {
       if (tableResult.success && tableResult.data) {
         setTableData(tableResult.data);
         try {
-          await saveTableDataToCache(tableResult.data, user.id);
+          await saveTableDataToCache(tableResult.data, user.uid);
           console.log('✅ Table data cached in Firestore successfully');
         } catch (cacheError) {
           console.warn('⚠️ Table cache save failed:', cacheError);
