@@ -3,8 +3,9 @@ import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 
 // Firebase configuration - ATS-Auto-Registerator
+// 🔒 セキュリティ: APIキーは環境変数から読み込み
 const firebaseConfig = {
-  apiKey: "AIzaSyCide6yOrsEaRvgYbUzn-ASbJPt8RsiDsA",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "default-key-for-development",
   authDomain: "ats-auto-registerator.firebaseapp.com",
   projectId: "ats-auto-registerator",
   storageBucket: "ats-auto-registerator.firebasestorage.app",
@@ -19,4 +20,4 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 
-export default app; 
+export default app;
